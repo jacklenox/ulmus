@@ -1,10 +1,13 @@
 <?php
 /**
- * The header for our theme.
+ * The main template file.
  *
- * This is the template that displays all of the <head> section and everything up until <div id="content">
+ * This is the most generic template file in a WordPress theme
+ * and one of the two required files for a theme (the other being style.css).
+ * It is used to display a page when nothing more specific matches a query.
+ * E.g., it puts together the home page when no home.php file exists.
  *
- * @link https://developer.wordpress.org/themes/basics/template-files/#template-partials
+ * @link https://codex.wordpress.org/Template_Hierarchy
  *
  * @package Ulmus
  */
@@ -27,7 +30,7 @@
 <script>
     var node = document.getElementById( 'body' );
     var app = Elm.Ulmus.embed( node );
-    app.ports.wpOptions.send( 'http://wp-rest-api-demo.dev/wp-json/wp/v2/posts' );
+    app.ports.apiUrl.send( '<?php echo esc_url( home_url() ); ?>/wp-json/wp/v2/' );
 </script>
 
 </body>
