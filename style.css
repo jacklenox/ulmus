@@ -1,0 +1,91 @@
+/*
+Theme Name: Ulmus
+Theme URI: http://underscores.me/
+Author: Jack Lenox
+Author URI: http://jacklenox.com
+Description: A WordPress theme built with Elm
+Version: 1.0.0
+License: GNU General Public License v2 or later
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
+Text Domain: ulmus
+Tags:
+
+This theme, like WordPress, is licensed under the GPL.
+Use it to make something cool, have fun, and share what you've learned with others.
+
+Ulmus is based on Underscores http://underscores.me/, (C) 2012-2016 Automattic, Inc.
+Underscores is distributed under the terms of the GNU GPL v2 or later.
+
+Normalizing styles have been helped along thanks to the fine work of
+Nicolas Gallagher and Jonathan Neal http://necolas.github.com/normalize.css/
+*/
+
+body {
+	font: 12pt/1.8 -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen-Sans", "Ubuntu", sans-serif;
+  max-width: 720px;
+  padding: 60px 20px;
+  margin: 0 auto;
+  color: #1a1a1a;
+}
+
+h1 {
+    font-size: 36pt;
+}
+
+h1 a:link, h1 a:visited {
+    color: #1a1a1a;
+    text-decoration: none;
+}
+
+h2 {
+  font-size: 28pt;
+  font-weight: 800;
+  margin: 0 0 20px 0;
+}
+
+h2:before {
+    content: '#';
+    display: inline-block;
+    width: 32px;
+    font-size: 24px;
+    position: relative;
+    left: -32px;
+    top: -2px;
+    margin-right: -32px;
+    color: #dddddd;
+}
+
+p {
+  margin-bottom: 30px;
+}
+
+a:link,
+a:active {
+  color: #3d88f5;
+}
+
+a:visited {
+  color: #5d9af7;
+}
+
+img {
+  max-width: 100%;
+}
+
+.avatar {
+  border-radius: 50%;
+  margin: 0 8px -6px 0;
+}
+
+.post {
+  margin-bottom: 60px;
+
+  footer {
+    margin: 40px 0 0 0;
+  }
+
+  footer span {
+    display: inline-block;
+    margin-right: 20px;
+  }
+}
