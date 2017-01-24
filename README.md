@@ -18,7 +18,7 @@ Once you've done that, clone this repo to your system. From within this director
 elm package install
 ```
 
-You can then compile the file to JavaScript with the following command:
+Say that yes, you agree to the plan. You can then compile the file to JavaScript with the following command:
 
 ```
 elm-make src/Ulmus.elm --output ulmus.js
