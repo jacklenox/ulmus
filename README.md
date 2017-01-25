@@ -2,6 +2,10 @@
 
 A proof of concept WordPress theme written in Elm.
 
+## Demo
+
+To view this theme in action, go to: [ulmus.mystagingwebsite.com](https://ulmus.mystagingwebsite.com/)
+
 ## Setup
 
 In order to compile the Elm source code, you need the `elm` package from npm. The easiest way to install npm is to install Node. You can follow instructions on how to do that [here](https://nodejs.org/).
