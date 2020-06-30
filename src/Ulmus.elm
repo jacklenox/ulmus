@@ -1,20 +1,22 @@
 port module Ulmus exposing (..)
 
-import Dom.Scroll exposing (toTop)
+import Browser exposing (Document, UrlRequest(..))
+import Browser.Navigation as Nav
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (onClick, onWithOptions)
+import Html.Parser
+import Html.Parser.Util
 import Http
 import Json.Decode as Decode exposing (Decoder, field, at, succeed)
-import Markdown
-import Navigation
-import UrlParser as Url exposing((</>), (<?>), s, int, string, stringParam, top)
+import Url exposing (Url)
+import Url.Parser as UrlParser exposing((</>), (<?>), s, int, string, top)
 
 
 -- MODEL
 
 type alias Model =
-    { route : Route
+    { key : Nav.Key
+    , path : Route
     , history : List (Maybe Route)
     , posts : List Post
     , havePosts : Bool
@@ -32,22 +34,23 @@ type alias Post =
     }
 
 
-initialModel : Route -> Model
-initialModel route =
-    { route = route
+initialModel : Nav.Key -> Route -> Model
+initialModel key path =
+    { key = key
+    , path = path
     , history = []
     , posts = []
     , havePosts = False
     , apiUrl = ""
     }
 
-init : Navigation.Location -> ( Model, Cmd Msg )
-init location =
+init : () -> Url -> Nav.Key -> ( Model, Cmd Msg )
+init _ url key =
     let
         currentRoute =
-            parseLocation location
+            parseLocation url
     in
-        ( initialModel currentRoute, Cmd.none )
+        ( initialModel key currentRoute, Cmd.none )
 
 
 -- URL PARSING
@@ -62,24 +65,24 @@ type Route
 type alias PostRoute = { year : Int, month : Int, day : Int, slug : String }
 
 
-rawPost : Url.Parser (Int -> Int -> Int -> String -> slug) slug
+rawPost : UrlParser.Parser (Int -> Int -> Int -> String -> slug) slug
 rawPost =
     int </> int </> int </> string
 
 
-route : Url.Parser (Route -> a) a
+route : UrlParser.Parser (Route -> a) a
 route =
-    Url.oneOf
-        [ Url.map Home top
-        , Url.map BlogPost rawPost
+    UrlParser.oneOf
+        [ UrlParser.map Home top
+        , UrlParser.map BlogPost rawPost
         ]
 
 
-parseLocation : Navigation.Location -> Route
+parseLocation : Url -> Route
 parseLocation location =
-    case (Url.parsePath route location) of
-        Just route ->
-            route
+    case (UrlParser.parse route location) of
+        Just path ->
+            path
         
         Nothing ->
             NotFoundRoute
@@ -91,8 +94,8 @@ parseLocation location =
 type Msg =
     GetPosts (Result Http.Error (List Post))
     | ApiUrl (String)
-    | NewUrl String
-    | UrlChange Navigation.Location
+    | ClickLink UrlRequest
+    | UrlChange Url
     | NoOp
 
 
@@ -103,25 +106,24 @@ update msg model =
             ( { model | posts = latestPosts, havePosts = True }, Cmd.none )
 
         GetPosts (Err error) ->
-            let
-                _ = Debug.log "Oops!" error
-            in
-                (model, Cmd.none)
+            (model, Cmd.none)
 
         ApiUrl newApiUrl ->
             ( { model | apiUrl = newApiUrl }, getPosts newApiUrl)
 
-        NewUrl url ->
-            ( model
-            , Navigation.newUrl url
-            )
+        ClickLink urlRequest ->
+            case urlRequest of
+                Internal url ->
+                    ( model, Nav.pushUrl model.key <| Url.toString url )
+                External url ->
+                    ( model, Nav.load url )
 
         UrlChange location ->
             let
                 newRoute =
                     parseLocation location
             in
-                ( { model | route = newRoute }, Cmd.none )
+                ( { model | path = newRoute }, Cmd.none )
 
         NoOp ->
             ( model, Cmd.none )
@@ -143,15 +145,11 @@ postDecoder =
 -- COMMANDS
 
 getPosts : String -> Cmd Msg
-getPosts apiUrl =
-    (Decode.list postDecoder)
-        |> Http.get (apiUrl ++ "posts")
-        |> Http.send GetPosts
-
-
-onPrevDefClick : msg -> Attribute msg
-onPrevDefClick message =
-    onWithOptions "click" { stopPropagation = True, preventDefault = True } (Decode.succeed message)
+getPosts getApiUrl =
+    Http.get
+        { url = getApiUrl ++ "posts"
+        , expect = Http.expectJson GetPosts (Decode.list postDecoder)
+        }
 
 
 -- SUBSCRIPTIONS
@@ -165,25 +163,29 @@ subscriptions model =
 
 -- VIEW
 
-view : Model -> Html Msg
+view : Model -> Document Msg
 view model =
-    div [ id "page", class "site" ]
-        [ div [ class "content" ]
-            [ header [ id "masthead", class "site-header" ]
-                [ div [ class "site-branding" ]
-                    [ h1 [ class "site-title" ] [
-                        a [ href "/", onPrevDefClick (NewUrl "/") ]
-                            [ text "WordPress ♥ Elm ♥ REST API" ]
+    { title = "WordPress ♥ Elm ♥ REST API"
+    , body =
+        [ div [ id "page", class "site" ]
+            [ div [ class "content" ]
+                [ header [ id "masthead", class "site-header" ]
+                    [ div [ class "site-branding" ]
+                        [ h1 [ class "site-title" ] [
+                            a [ href "/" ]
+                                [ text "WordPress ♥ Elm ♥ REST API" ]
+                            ]
                         ]
                     ]
+                , page model
                 ]
-            , page model
             ]
         ]
+    }
 
 page : Model -> Html Msg
 page model =
-    case model.route of
+    case model.path of
         Home ->
             viewPostList model.posts
 
@@ -221,13 +223,21 @@ viewSinglePost model slug =
 
 viewPost : Post -> Html Msg
 viewPost post =
+    let
+        nodes =
+            case Html.Parser.run post.content of
+                Ok parsedNodes ->
+                    Html.Parser.Util.toVirtualDom parsedNodes
+                _ ->
+                    []
+    in
     section [ class "post" ]
         [ h2 [] [
-            a [ href post.link, onPrevDefClick (NewUrl post.link) ]
+            a [ href post.link ]
                 [ text post.title ]
         ]
         , article [ class "content"]
-            [ Markdown.toHtml [] post.content ]
+            nodes
         ]
 
 
@@ -237,11 +247,13 @@ viewNotFound =
         [ text "Not found" ]
 
 
-main : Program Never Model Msg
+main : Program () Model Msg
 main =
-    Navigation.program UrlChange
+    Browser.application
         { init = init
         , view = view
         , update = update
         , subscriptions = subscriptions
+        , onUrlRequest = ClickLink
+        , onUrlChange = UrlChange
         }

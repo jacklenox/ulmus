@@ -52,6 +52,6 @@ add_action( 'after_setup_theme', 'ulmus_setup' );
 function ulmus_scripts() {
 	wp_enqueue_style( 'ulmus-style', get_stylesheet_uri() );
 
-	wp_enqueue_script( 'ulmus-theme', get_template_directory_uri() . '/ulmus.js', array(), '20170118', true );
+	wp_enqueue_script( 'ulmus-theme', get_template_directory_uri() . '/ulmus.js', array(), '20200630', true );
 }
 add_action( 'wp_enqueue_scripts', 'ulmus_scripts' );

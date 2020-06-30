@@ -28,8 +28,7 @@
 <?php wp_footer(); ?>
 
 <script>
-    var node = document.getElementById( 'body' );
-    var app = Elm.Ulmus.embed( node );
+	var app = Elm.Ulmus.init();
     app.ports.apiUrl.send( '<?php echo esc_url( home_url() ); ?>/wp-json/wp/v2/' );
 </script>
 

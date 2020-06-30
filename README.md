@@ -19,13 +19,7 @@ npm install elm -g
 Once you've done that, clone this repo to your system. From within this directory, you run:
 
 ```
-elm package install
-```
-
-Say that yes, you agree to the plan. You can then compile the file to JavaScript with the following command:
-
-```
-elm-make src/Ulmus.elm --output ulmus.js
+elm make src/Ulmus.elm --output ulmus.js
 ```
 
 Once that's done, this will work like a normal theme. You just need to drag the whole directory into the `wp-content/themes` directory of a WordPress site, and activate the theme via `wp-admin`.
